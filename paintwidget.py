@@ -4,11 +4,13 @@ from PyQt5.QtWidgets import QWidget
 import pylsl
 import math
 import copy
-
+from scipy import signal as sg
+import numpy as np
+from collections import deque
 
 CHANNEL_Y_FILL = 0.7  # How much of the per-channel vertical space is filled.  > 1 will overlap the lines.
 
-
+#TODO: remove static sampling rate
 class DataThread(QThread):
     updateStreamNames = pyqtSignal(list, int)
     sendData = pyqtSignal(list, list, list, list)
@@ -25,6 +27,14 @@ class DataThread(QThread):
         self.streams = []
         self.stream_params = []
         self.sig_strm_idx = -1
+        
+        self.BPfilt = True
+        self.Notchfilt = True
+        #implement notch filter
+        self.butter_b, self.butter_a = sg.butter(4, (1,30), btype='pass', fs = 1000)
+        self.zi = [sg.lfilter_zi(self.butter_b, self.butter_a)]*8
+        self.notch_b, self.notch_a = sg.butter(4, (49,51), btype='stop', fs = 1000)
+        self.notchzi = [sg.lfilter_zi(self.notch_b, self.notch_a)]*8
 
     def handle_stream_expanded(self, name):
         stream_names = [_['metadata']['name'] for _ in self.stream_params]
@@ -65,7 +75,18 @@ class DataThread(QThread):
 
             self.updateStreamNames.emit([_['metadata'] for _ in self.stream_params], self.sig_strm_idx)
             self.start()
+    
 
+    def filt(self, send_data):
+        filtdat, z = sg.lfilter(self.butter_b, self.butter_a, np.array(send_data), axis = 0, zi = self.zi)
+        self.zi = z
+        return filtdat.tolist()
+    
+    def notchfilt(self, send_data):
+        filtdat, z = sg.lfilter(self.notch_b, self.notch_a, np.array(send_data), axis = 0, zi = self.notchzi)
+        self.notchzi = z
+        return filtdat.tolist()
+    
     def run(self):
         if self.streams:
             while True:
@@ -77,6 +98,13 @@ class DataThread(QThread):
                     if params['chunkSize']:
                         pull_kwargs['max_samples'] = params['chunkSize']
                     send_data, send_ts = inlet.pull_chunk(**pull_kwargs)
+                    
+                    if self.BPfilt:
+                        send_data = self.filt(send_data)
+                    
+                    if self.Notchfilt:
+                        send_data = self.notchfilt(send_data)
+                        
                     if send_ts and params['downSampling']:
                         for m in range(round(params['chunkSize'] / params['downSamplingFactor'])):
                             end_idx = min((m + 1) * params['downSamplingFactor'], len(send_data))
@@ -111,6 +139,11 @@ class PaintWidget(QWidget):
         self.dataTr.sendData.connect(self.get_data)
         self.dataTr.changedStream.connect(self.reset)
 
+        
+    def filter_state(self):
+        print(self.dataTr.Notchfilt)
+        print(self.dataTr.BPfilt)
+        
     def reset(self):
         self.chunk_idx = 0
         self.channelHeight = 0

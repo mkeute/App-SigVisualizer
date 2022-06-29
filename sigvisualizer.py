@@ -28,12 +28,32 @@ class SigVisualizer(QMainWindow):
         self.ui.toggleButton.clicked.connect(self.toggle_panel)
         self.ui.updateButton.clicked.connect(
             self.ui.widget.dataTr.update_streams)
+        
+        
         self.ui.widget.dataTr.updateStreamNames.connect(
             self.update_metadata_widget)
         self.panelHidden = False
 
         self.ui.treeWidget.itemExpanded.connect(self.tree_item_expanded)
         self.stream_expanded.connect(self.ui.widget.dataTr.handle_stream_expanded)
+
+
+        #filter settings
+        self.ui.BPfiltBox.setChecked(True)
+        self.ui.BPfiltBox.stateChanged.connect(self.BPfilt)
+        
+        self.ui.NotchfiltBox.setChecked(True)
+        self.ui.NotchfiltBox.stateChanged.connect(self.Notchfilt)
+
+        
+    def BPfilt(self):
+        state = self.ui.BPfiltBox.isChecked()
+        self.ui.widget.dataTr.BPfilt = state
+        self.ui.widget.filter_state()
+    def Notchfilt(self):
+        state = self.ui.NotchfiltBox.isChecked()
+        self.ui.widget.dataTr.Notchfilt = state
+        self.ui.widget.filter_state()
 
     def tree_item_expanded(self, widget_item):
         name = widget_item.text(0)

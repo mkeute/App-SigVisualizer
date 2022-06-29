@@ -9,7 +9,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
+    def setupUi(self, MainWindow, BPfilt = False, Notchfilt = False):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1123, 759)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -36,12 +36,24 @@ class Ui_MainWindow(object):
         self.treeWidget.setObjectName("treeWidget")
         self.treeWidget.headerItem().setText(0, "1")
         self.gridLayout.addWidget(self.treeWidget, 0, 1, 1, 1)
+        
+
         self.widget = PaintWidget(self.centralwidget)
         self.widget.setObjectName("widget")
         self.gridLayout.addWidget(self.widget, 0, 2, 2, 1)
         self.updateButton = QtWidgets.QPushButton(self.centralwidget)
         self.updateButton.setObjectName("updateButton")
-        self.gridLayout.addWidget(self.updateButton, 1, 1, 1, 1)
+        
+        self.BPfiltBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.BPfiltBox.setObjectName("BPfiltButton")
+        
+        self.NotchfiltBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.NotchfiltBox.setObjectName("NotchfiltButton")
+        
+        self.gridLayout.addWidget(self.updateButton)
+        self.gridLayout.addWidget(self.BPfiltBox)
+        self.gridLayout.addWidget(self.NotchfiltBox)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1123, 26))
@@ -58,6 +70,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.updateButton.setText(_translate("MainWindow", "Update Streams"))
+        self.BPfiltBox.setText(_translate("MainWindow", "Bandpass filter (1-30 Hz)"))
+        self.NotchfiltBox.setText(_translate("MainWindow", "Notch filter (50 Hz)"))
 
 from paintwidget import PaintWidget
 
