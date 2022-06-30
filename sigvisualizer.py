@@ -49,11 +49,10 @@ class SigVisualizer(QMainWindow):
     def BPfilt(self):
         state = self.ui.BPfiltBox.isChecked()
         self.ui.widget.dataTr.BPfilt = state
-        self.ui.widget.filter_state()
+
     def Notchfilt(self):
         state = self.ui.NotchfiltBox.isChecked()
         self.ui.widget.dataTr.Notchfilt = state
-        self.ui.widget.filter_state()
 
     def tree_item_expanded(self, widget_item):
         name = widget_item.text(0)
