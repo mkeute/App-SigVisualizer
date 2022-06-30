@@ -32,9 +32,9 @@ class DataThread(QThread):
         self.Notchfilt = True
         #implement notch filter
         self.butter_b, self.butter_a = sg.butter(4, (1,30), btype='pass', fs = 1000)
-        self.zi = [sg.lfilter_zi(self.butter_b, self.butter_a)]*8
+        self.zi = []
         self.notch_b, self.notch_a = sg.butter(4, (49,51), btype='stop', fs = 1000)
-        self.notchzi = [sg.lfilter_zi(self.notch_b, self.notch_a)]*8
+        self.notchzi = []
 
     def handle_stream_expanded(self, name):
         stream_names = [_['metadata']['name'] for _ in self.stream_params]
@@ -78,12 +78,21 @@ class DataThread(QThread):
     
 
     def filt(self, send_data):
-        filtdat, z = sg.lfilter(self.butter_b, self.butter_a, np.array(send_data), axis = 0, zi = self.zi)
+        zi = self.zi
+        send_data = np.array(send_data)
+        if len(zi)==0:
+            zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1])
+
+        filtdat, z = sg.lfilter(self.butter_b, self.butter_a, send_data, axis = 0, zi = zi)
         self.zi = z
         return filtdat.tolist()
     
     def notchfilt(self, send_data):
-        filtdat, z = sg.lfilter(self.notch_b, self.notch_a, np.array(send_data), axis = 0, zi = self.notchzi)
+        zi = self.notchzi
+        send_data = np.array(send_data)
+        if len(zi)==0:
+            zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1])
+        filtdat, z = sg.lfilter(self.notch_b, self.notch_a, send_data, axis = 0, zi = zi)
         self.notchzi = z
         return filtdat.tolist()
     
