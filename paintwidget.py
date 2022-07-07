@@ -81,9 +81,9 @@ class DataThread(QThread):
         zi = self.zi
         send_data = np.array(send_data)
         if len(zi)==0:
-            zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1])
-
+            zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1]).T
         filtdat, z = sg.lfilter(self.butter_b, self.butter_a, send_data, axis = 0, zi = zi)
+        print('performed filtering')
         self.zi = z
         return filtdat.tolist()
     
@@ -91,8 +91,9 @@ class DataThread(QThread):
         zi = self.notchzi
         send_data = np.array(send_data)
         if len(zi)==0:
-            zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1])
+            zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1]).T
         filtdat, z = sg.lfilter(self.notch_b, self.notch_a, send_data, axis = 0, zi = zi)
+        print('performed notch filtering')
         self.notchzi = z
         return filtdat.tolist()
     
