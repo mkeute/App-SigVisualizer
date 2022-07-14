@@ -51,12 +51,15 @@ class DataThread(QThread):
                     "name": n,
                     "ch_count": stream.channel_count(),
                     "ch_format": stream.channel_format(),
-                    "srate": stream.nominal_srate()
+                    "srate": stream.nominal_srate(),
+                    "ch_labels": []                    
                 })
-                # ch = stream.desc().child("channels").child("channel")
-                # for ch_ix in range(stream.channel_count()):
-                #     print("  " + ch.child_value("label"))
-                #     ch = ch.next_sibling()
+
+                ch = stream.desc().child("channels").child("channel")
+                for ch_ix in range(stream.channel_count()):
+                    stream_params["metadata"]["ch_labels"].append(ch.child_value("label"))
+
+                    ch = ch.next_sibling()
 
                 stream_params['inlet'] = pylsl.StreamInlet(stream)
                 stream_params['is_marker'] = stream.channel_format() in ["String", pylsl.cf_string]\
@@ -83,7 +86,6 @@ class DataThread(QThread):
         if len(zi)==0:
             zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1]).T
         filtdat, z = sg.lfilter(self.butter_b, self.butter_a, send_data, axis = 0, zi = zi)
-        print('performed filtering')
         self.zi = z
         return filtdat.tolist()
     
@@ -93,7 +95,6 @@ class DataThread(QThread):
         if len(zi)==0:
             zi = np.array([sg.lfilter_zi(self.butter_b, self.butter_a)]*send_data.shape[1]).T
         filtdat, z = sg.lfilter(self.notch_b, self.notch_a, send_data, axis = 0, zi = zi)
-        print('performed notch filtering')
         self.notchzi = z
         return filtdat.tolist()
     

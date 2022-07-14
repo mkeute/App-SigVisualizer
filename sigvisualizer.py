@@ -1,11 +1,12 @@
 import sys
-
+import numpy as np
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QStatusBar,
                              QTreeWidgetItem)
 
 from ui_sigvisualizer import Ui_MainWindow
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class SigVisualizer(QMainWindow):
@@ -66,18 +67,25 @@ class SigVisualizer(QMainWindow):
         for s_ix, s_meta in enumerate(metadata):
             item = QTreeWidgetItem(self.ui.treeWidget)
             item.setText(0, s_meta["name"])
-
+            print(s_meta)
             for m in range(s_meta["ch_count"]):
                 channel_item = QTreeWidgetItem(item)
+
+                #TODO insert channel labels here
                 channel_item.setText(0, 'Channel {}'.format(m+1))
+                
+                
                 channel_item.setCheckState(0, Qt.Checked)
 
+                #print(channel_item.checkState(0))
             item.setExpanded(True if s_ix == default_idx else False)
             self.ui.treeWidget.addTopLevelItem(item)
 
         self.ui.treeWidget.setAnimated(True)
         self.statusBar.showMessage(
             "Sampling rate: {}Hz".format(metadata[default_idx]["srate"]))
+
+
 
     def toggle_panel(self):
         if self.panelHidden:

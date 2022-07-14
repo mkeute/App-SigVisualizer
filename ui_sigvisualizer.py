@@ -38,6 +38,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.treeWidget, 0, 1, 1, 1)
         
 
+
         self.widget = PaintWidget(self.centralwidget)
         self.widget.setObjectName("widget")
         self.gridLayout.addWidget(self.widget, 0, 2, 2, 1)
